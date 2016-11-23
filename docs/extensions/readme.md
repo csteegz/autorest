@@ -16,6 +16,7 @@ The following documents describes AutoRest specific vendor extensions for [Swagg
 * [x-ms-client-flatten](#x-ms-client-flatten) - flattens client model property or parameter.
 * [x-ms-parameterized-host](#x-ms-parameterized-host) - replaces the Swagger host with a host template that can be replaced with variable parameters.
 * [x-ms-mutability](#x-ms-mutability) - provides insight to Autorest on how to generate code. It doesn't alter the modeling of what is actually sent on the wire.
+* [x-ms-treat-as-default](#x-ms-treat-as-default) - tells Autorest to treat the response as a default, and not generate code to handle it. This allows the user to document error cases in swagger, but still generate code that treats them as errors.
 
 ## Microsoft Azure Extensions
 * [x-ms-odata](#x-ms-odata) - indicates the operation includes one or more [OData](http://www.odata.org/) query parameters.
@@ -620,6 +621,52 @@ Examples:
 }
 ```
 
+##x-ms-treat-as-default
+Autorest typically treats every response provided as an expected, normal response, while errors are handled by a default. 
+On the other hand, swagger users typically prefer to specify as many known responses, including errors as possible.
+Using this extension indicates to Autorest that it should ignore this response when generating code, and handle it with the default case. 
+
+**Schema**:
+`bool` - true to enable, false is the same as not including the extension.
+
+**Parent element**:  [Response Object](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responseObject)
+
+**Example**:
+```json5
+"responses": {
+    "204": {
+        "description": "A list of caches",
+        "examples": {
+            "application/json": {
+                "id": 9,
+                "category": {
+                    "name": "domestic"
+                },
+                "name": "monster",
+                "tags": [
+                    {
+                        "name": "for sale"
+                    }
+                ],
+                "status": "alive"
+            }
+        }
+    },
+    "403": {
+        "description": "User is forbidden to reset the products.",
+        "x-ms-treat-as-default": true,
+        "schema": {
+            "$ref": "Error"
+        }
+    },
+    "default": {
+        "description": "Unexpected error",
+        "schema": {
+            "$ref": "Error"
+        }
+    }
+}
+```
 
 ##x-ms-odata
 When present the `x-ms-odata` extensions indicates the operation includes one or more [OData](http://www.odata.org/) query parameters. These parameters inlude `$filter`, `$top`, `$orderby`,  `$skip`,  and `$expand`. In some languages the generated method will expose these parameters as strongly types OData type.
